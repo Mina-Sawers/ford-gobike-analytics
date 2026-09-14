@@ -17,6 +17,9 @@ def clean_missing_and_duplicates(df):
     
     critical_cols = ['member_gender', 'member_birth_year', 'start_station_name', 'end_station_name']
     df.dropna(subset=critical_cols, inplace=True)
+
+    df = df[df['member_gender']!='Other']
+
     return df
 
 def filter_iqr(df, column_name):
@@ -56,6 +59,7 @@ def engineer_duration(df):
     """
     print("Engineering duration and filtering duration outliers...")
     df['duration_minute'] = df['duration_sec'] / 60.0
+    df['duration_minute'] = df['duration_minute'].round(2)
     
     # Drop the original seconds column
     df.drop(columns=['duration_sec'], inplace=True)
@@ -65,26 +69,7 @@ def engineer_duration(df):
     return df
 
 
-def engineer_time(df):
-    """
-    Converts start_time using explicit 12-hour AM/PM format, 
-    then extracts the hour in 24-hour format.
-    """
-    print("Converting 12-hour time to 24-hour format and extracting hour...")
-    
-    # %I = 12-hour clock (01-12)
-    # %M = Minute (00-59)
-    # %S = Second (00-59)
-    # %p = AM/PM
-    df['start_time'] = pd.to_datetime(df['start_time'], format='%I:%M:%S %p')
-    df['end_time'] = pd.to_datetime(df['end_time'], format='%I:%M:%S %p')
-    # Drop rows that failed the strict format (like '55:35.1')
-    # df.dropna(subset=['start_time'], inplace=True)
-    
-    # .dt.hour automatically extracts the time in 24-hour format!
-    df['start_time_hour'] = df['start_time'].dt.hour
-    
-    return df
+
 
 def main():
     """
@@ -98,7 +83,17 @@ def main():
     df = clean_missing_and_duplicates(df)
     df = engineer_age(df)
     df = engineer_duration(df)
-    df = engineer_time(df)
+
+    
+    # Final Data Quality Check ---
+    print("\n--- Final Data Quality Check ---")
+    print(f"Total remaining duplicates: {df.duplicated().sum()}")
+    print("Total remaining nulls per column:")
+    print(df.isnull().sum())
+    print("--------------------------------\n")
+    print(df.info())
+    print("--------------------------------\n")
+    print(df.describe())
     
     # 3. Export Clean Data
     output_file = 'cleaned_fordgobike.csv'
