@@ -72,7 +72,7 @@ def engineer_duration(df):
 def final_cleanup(df):
     # I noticed the time is 12 AM for all rows, so I think the best solution is to drop these columns
     print("Dropping corrupted time columns to adjust to the new ERD...")
-    cols_to_drop = ['start_time', 'end_time']
+    cols_to_drop = ['start_time', 'end_time','bike_share_for_all_trip']
     df.drop(columns=cols_to_drop, inplace=True)
     return df
 
