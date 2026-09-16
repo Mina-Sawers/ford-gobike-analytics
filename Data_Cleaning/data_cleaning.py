@@ -62,12 +62,19 @@ def engineer_duration(df):
     df['duration_minute'] = df['duration_minute'].round(2)
     
     # Drop the original seconds column
-    df.drop(columns=['duration_sec'], inplace=True)
+    # df.drop(columns=['duration_sec'], inplace=True)
     
     # Filter duration outliers mathematically using IQR
     df = filter_iqr(df, 'duration_minute')
+    
     return df
 
+def final_cleanup(df):
+    # I noticed the time is 12 AM for all rows, so I think the best solution is to drop these columns
+    print("Dropping corrupted time columns to adjust to the new ERD...")
+    cols_to_drop = ['start_time', 'end_time']
+    df.drop(columns=cols_to_drop, inplace=True)
+    return df
 
 
 
@@ -83,7 +90,7 @@ def main():
     df = clean_missing_and_duplicates(df)
     df = engineer_age(df)
     df = engineer_duration(df)
-
+    df = final_cleanup(df)
     
     # Final Data Quality Check ---
     print("\n--- Final Data Quality Check ---")
