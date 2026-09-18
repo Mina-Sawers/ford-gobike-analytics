@@ -1,43 +1,53 @@
 import pandas as pd
-from sqlalchemy import create_engine
-import streamlit as st
 import plotly.express as px
-from app import load_dashboard_data
+import plotly.graph_objects as go
 
+# Two-Tone Balanced Professional Palette (Calm Mid-Teal Tones)
+COLORS = ["#0f766e", "#14b8a6"]
 
-'''
-
-#DB connection
-DB_URL = "postgresql+psycopg2://postgres:123@localhost:5432/ford_gobike"
-
-engine = create_engine(DB_URL)
-
-#with engine.connect() as conn:
-#    print("Connected successfully")
-#------------------------------------
-#Reading tables
-dim_station = pd.read_sql(
-    "SELECT * FROM dim_station",
-    engine
+BASE_LAYOUT = dict(
+    template="plotly_white",
+    margin=dict(l=40, r=20, t=50, b=40),
+    title_x=0.5,
 )
 
-fact_trips = pd.read_sql(
-    "SELECT * FROM fact_trips",
-    engine
-)
+def _empty_figure(message):
+    """Placeholder figure when data is empty to prevent crashes."""
+    fig = go.Figure()
+    fig.add_annotation(
+        text=message, showarrow=False, font=dict(size=14, color="gray")
+    )
+    fig.update_xaxes(visible=False)
+    fig.update_yaxes(visible=False)
+    fig.update_layout(**BASE_LAYOUT)
+    return fig
 
-print(dim_station.head())
 
-start_df = fact_trips.merge(
-    dim_station,
-    left_on="start_station_id",
-    right_on="station_id"
-)
+def render_station_charts(df):
+    """
+    Station and Spatial charts for Heba's section.
+    """
+    if df.empty:
+        return [_empty_figure("No data for station analysis")]
 
-top_start = (
-    fact_trips
-    .groupby("start_station_id")
-    .size()
-    .reset_index(name="trip_count")
-)
-'''
+    top_start = (
+        df.groupby("start_station", as_index=False)
+        .size()
+        .rename(columns={"size": "trip_count"})
+        .nlargest(10, "trip_count")
+        .sort_values("trip_count", ascending=True)
+    )
+    
+    fig_stations = px.bar(
+        top_start,
+        x="trip_count",
+        y="start_station",
+        orientation="h",
+        title="Top 10 Start Stations",
+        labels={"trip_count": "Trips", "start_station": ""},
+        color="trip_count",
+        color_discrete_sequence=COLORS 
+    )
+    fig_stations.update_layout(showlegend=False, **BASE_LAYOUT)
+
+    return [fig_stations]
