@@ -1,35 +1,18 @@
-"""
-youssef_charts.py
-------------------
-Dashboard Visualizer - Time & Users (Part 3 - Charts)
-
-Every function here takes a DataFrame (filtered or not) and returns
-a Plotly figure. Neamat will import these functions and plug them
-into her layout and callbacks.
-
-Important note:
-The current dataset (cleaned_fordgobike.csv) has no date or time
-columns, so "trips by weekday / month" charts can't be built yet.
-Once the team re-downloads the original dataset with valid
-timestamps, we'll add those functions to this same file without
-touching anything else.
-"""
-
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
 # ---------------------------------------------------------------
-# Shared colors so every chart looks consistent
+# Two-Tone Balanced Professional Palette (Calm Mid-Teal Tones)
 # ---------------------------------------------------------------
 COLORS = {
-    "Subscriber": "#1f9bd1",
-    "Customer": "#f58220",
-    "Male": "#1f9bd1",
-    "Female": "#f58220",
-    "Young": "#1f9bd1",
-    "Adult": "#f58220",
-    "Senior": "#7ac36a",
+    "Subscriber": "#0f766e",
+    "Customer": "#14b8a6",
+    "Male": "#0f766e",
+    "Female": "#14b8a6",
+    "Young": "#0f766e",
+    "Adult": "#14b8a6",
+    "Senior": "#0f766e",
 }
 
 BASE_LAYOUT = dict(
@@ -71,8 +54,6 @@ def get_kpis(df):
     return {
         "total_trips": f"{len(df):,}",
         "avg_duration": f"{df['duration_minute'].mean():.1f} mins",
-        # No user_id column in this dataset, so unique bike count
-        # is used as a stand-in for "active users"
         "active_bikes": f"{df['bike_id'].nunique():,}",
         "top_station": df["start_station_name"].mode()[0],
     }
@@ -166,7 +147,7 @@ def fig_age_histogram(df):
         x="age",
         nbins=30,
         title="Age Distribution of Riders",
-        color_discrete_sequence=["#1f9bd1"],
+        color_discrete_sequence=["#0f766e"],
     )
     fig.update_layout(xaxis_title="Age", yaxis_title="Trips", bargap=0.05,
                       **BASE_LAYOUT)
@@ -185,7 +166,7 @@ def fig_duration_histogram(df):
         x="duration_minute",
         nbins=40,
         title="Trip Duration Distribution",
-        color_discrete_sequence=["#f58220"],
+        color_discrete_sequence=["#14b8a6"],
     )
     fig.update_layout(xaxis_title="Duration (minutes)", yaxis_title="Trips",
                       bargap=0.05, **BASE_LAYOUT)
@@ -221,10 +202,4 @@ if __name__ == "__main__":
     print("Rows:", len(df))
     print("KPIs:", get_kpis(df))
 
-    # Uncomment any line below to preview that chart in the browser
     fig_user_type_donut(df).show()
-    # fig_gender_bar(df).show()
-    # fig_age_group_bar(df).show()
-    # fig_age_histogram(df).show()
-    # fig_duration_histogram(df).show()
-    # fig_duration_by_user_type(df).show()
