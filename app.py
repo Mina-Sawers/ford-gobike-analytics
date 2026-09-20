@@ -299,41 +299,12 @@ def render_station_section(data):
         st.info("No trips match the selected filters.")
         return
 
-    top_start_stations = (
-        data.groupby("start_station", as_index=False)
-        .size()
-        .rename(columns={"size": "trip_count"})
-        .nlargest(10, "trip_count")
-        .sort_values("trip_count")
-    )
-    station_chart = px.bar(
-        top_start_stations,
-        x="trip_count",
-        y="start_station",
-        orientation="h",
-        title="Top 10 start stations",
-        labels={"trip_count": "Trips", "start_station": ""},
-        color_discrete_sequence=["#0f766e"]
-    )
-    station_chart.update_layout(showlegend=False)
-    st.plotly_chart(station_chart, use_container_width=True)
-
-    map_data = (
-        data.groupby(["start_station", "start_lat", "start_lon"], as_index=False)
-        .size()
-        .rename(columns={"size": "trip_count", "start_lat": "latitude", "start_lon": "longitude"})
-    )
-    st.subheader("Start station activity")
-    st.map(map_data, latitude="latitude", longitude="longitude", size="trip_count", zoom=11)
-
-    if heba_charts and hasattr(heba_charts, "render_station_charts"):
-        st.markdown("---")
-        st.subheader("📍 Spatial & Station Insights")
+    if heba_charts and hasattr(heba_charts, "render_station_tab"):
+        #st.markdown("---")
+        #st.subheader("📍 Spatial & Station Insights")
         try:
-            heba_result = heba_charts.render_station_charts(data)
-            charts = heba_result if isinstance(heba_result, (list, tuple)) else [heba_result]
-            for fig in charts:
-                st.plotly_chart(fig, use_container_width=True)
+            heba_charts.render_station_tab(data)
+            return
         except Exception as e:
             st.error(f"Error rendering Heba's charts: {e}")
     else:
