@@ -3,16 +3,16 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # ---------------------------------------------------------------
-# Two-Tone Balanced Professional Palette (Calm Mid-Teal Tones)
+# Two-Tone Professional Palette (Rose & Near-black / Ink)
 # ---------------------------------------------------------------
 COLORS = {
-    "Subscriber": "#0f766e",
-    "Customer": "#14b8a6",
-    "Male": "#0f766e",
-    "Female": "#14b8a6",
-    "Young": "#0f766e",
-    "Adult": "#14b8a6",
-    "Senior": "#0f766e",
+    "Subscriber": "#EF4676",
+    "Customer": "#2A2830",
+    "Male": "#EF4676",
+    "Female": "#2A2830",
+    "Young": "#EF4676",
+    "Adult": "#2A2830",
+    "Senior": "#F2A6BE",
 }
 
 BASE_LAYOUT = dict(
@@ -147,7 +147,7 @@ def fig_age_histogram(df):
         x="age",
         nbins=30,
         title="Age Distribution of Riders",
-        color_discrete_sequence=["#0f766e"],
+        color_discrete_sequence=["#EF4676"],
     )
     fig.update_layout(xaxis_title="Age", yaxis_title="Trips", bargap=0.05,
                       **BASE_LAYOUT)
@@ -155,21 +155,32 @@ def fig_age_histogram(df):
 
 
 # ===============================================================
-# 6. Trip duration distribution
+# 6. Trip duration distribution (Converted to Smooth Area Wave Chart)
 # ===============================================================
 def fig_duration_histogram(df):
     if df.empty:
         return _empty_figure("No data for this filter")
 
-    fig = px.histogram(
-        df,
+    trend_data = df.groupby([df["duration_minute"].round(0), "user_type"], as_index=False).size()
+    trend_data.columns = ["duration_minute", "user_type", "trips"]
+
+    fig = px.area(
+        trend_data,
         x="duration_minute",
-        nbins=40,
-        title="Trip Duration Distribution",
-        color_discrete_sequence=["#14b8a6"],
+        y="trips",
+        color="user_type",
+        line_shape="spline",
+        title="Trip Duration Wave Trends",
+        labels={"duration_minute": "Duration (minutes)", "trips": "Trips", "user_type": "User Type"},
+        color_discrete_map=COLORS,
     )
-    fig.update_layout(xaxis_title="Duration (minutes)", yaxis_title="Trips",
-                      bargap=0.05, **BASE_LAYOUT)
+    fig.update_traces(line=dict(width=2.5), opacity=0.75)
+    fig.update_layout(
+        xaxis_title="Duration (minutes)", 
+        yaxis_title="Trips",
+        hovermode="x unified",
+        **BASE_LAYOUT
+    )
     return fig
 
 
